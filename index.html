@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Deals & Pending Slots</title>
+  <title>Live Deals & Slots</title>
   <style>
     :root {
       --glass-bg: rgba(255, 255, 255, 0.1);
@@ -104,7 +104,7 @@
       height: 220px;
       object-fit: contain;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.9); /* White bg for clear amazon products */
+      background: rgba(255, 255, 255, 0.9);
       padding: 0.5rem;
       box-sizing: border-box;
     }
@@ -217,21 +217,19 @@
   </div>
 
   <script>
-    // =========================================================================
-    // IMPORTANT: Yahan apna Google Sheet ka Published CSV link paste karein!
-    // =========================================================================
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_G_izI9M7UirOuc-xCe8w-wK9JFi5lJ4Bv6QL7qVFFlHZtz-sKbLbH19jhkXFT54fT4D6mSkJXpqc/pub?output=csv";
+    // Aapka Google Sheet CSV link yahan pehle se daal diya hai
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_G_izI9M7UirOuc-xCe8w-wK9JFi51J4Bv6L7qVFF1hZtzS4KbLbH19jhkXFT54fT4D6mSkJXpqc/pub?gid=126081263&single=true&output=csv";
     
-    // Aapki Sheet ki headings ke numbers (0 se start hota hai)
+    // Aapki Sheet ki columns ke exact numbers
     const COLUMN_MAP = {
-        ordersPending: 2, // C Column (Orders Pendng)
-        productName: 3,   // D Column (Product name/Code)
-        orderLink: 4,     // E Column (Order Links)
-        asin: 5,          // F Column (ASIN)
-        brand: 6,         // G Column (Brand Name)
-        category: 7,      // H Column (Catogory)
-        commission: 8,    // I Column (Rating/Review)
-        reviewIssue: 9    // J Column (Less)
+        ordersPending: 2, // Column C (Orders Pendng)
+        productName: 3,   // Column D (Product name/Code)
+        orderLink: 4,     // Column E (Order Links)
+        asin: 5,          // Column F (ASIN)
+        brand: 6,         // Column G (Brand Name)
+        category: 7,      // Column H (Catogory)
+        commission: 8,    // Column I (Rating/Review)
+        reviewIssue: 9    // Column J (Less)
     };
 
     const REFRESH_INTERVAL = 30;
@@ -243,7 +241,6 @@
         document.getElementById('countdown').innerText = countdownTimer;
     }, 1000);
 
-    // CSV Parser
     function parseCSV(str) {
         const arr = [];
         let quote = false;
@@ -265,11 +262,6 @@
     }
 
     async function fetchData() {
-        if(GOOGLE_SHEET_CSV_URL === "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_G_izI9M7UirOuc-xCe8w-wK9JFi5lJ4Bv6QL7qVFFlHZtz-sKbLbH19jhkXFT54fT4D6mSkJXpqc/pub?output=csv") {
-             document.getElementById('loading').innerText = "Please paste valid Google Sheet CSV URL in the code.";
-             return;
-        }
-
         try {
             const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&t=${new Date().getTime()}`);
             if(!response.ok) throw new Error("Network response error");
@@ -284,14 +276,14 @@
             
         } catch (error) {
             console.error("Error fetching data:", error);
+            document.getElementById('loading').innerText = "Error loading data. Please check Google Sheet Publish settings.";
         }
     }
 
     function renderProducts(rows) {
         const grid = document.getElementById('productGrid');
-        grid.innerHTML = ''; 
+        grid.innerHTML = ""; 
 
-        // Start from index 1 to skip header row
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             
@@ -302,17 +294,16 @@
             const link = row[COLUMN_MAP.orderLink] || "#";
             const asin = (row[COLUMN_MAP.asin] || "").trim();
             const brand = row[COLUMN_MAP.brand] || "No Brand";
-            const category = row[COLUMN_MAP.category] || "General";
+            const category = row[COLUMN_MAP.category]olar || "General";
             const commission = row[COLUMN_MAP.commission] || "-";
             const reviewIssue = row[COLUMN_MAP.reviewIssue] || "";
 
-            // ASIN Image Trick: Amazon ke official image server se photo fetch karna
-            const imgUrl = asin ? `https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&Format=_SL500_&ASIN=${asin}&MarketPlace=IN&ID=AsinImage&WS=1&ServiceVersion=20070822` : "https://via.placeholder.com/400x300?text=No+ASIN+Provided";
+            const imgUrl = asin ? `https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&Format=_SL500_&ASIN=${asin}&MarketPlace=IN&ID=AsinImage&WS=1&ServiceVersion=20070822` : "https://via.placeholder.com/400x300?text=No+ASIN";
 
             const card = document.createElement('div');
             card.className = 'glass-card';
             
-            let issueHTML = reviewIssue ? `<div class="review-issue">⚠️ <b>Issue:</b> ${reviewIssue}</div>` : '';
+            let issueHTML = reviewIssue ? `<div class="review-issue">⚠️ <b>Less/Info:</b> ${reviewIssue}</div>` : '';
 
             card.innerHTML = `
                 <img src="${imgUrl}" alt="${title}" class="product-img" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">
@@ -330,7 +321,7 @@
                 </div>
                 
                 <div class="stats-row">
-                    <span class="stat-label">Commission</span>
+                    <span class="stat-label">Rating/Review</span>
                     <span class="stat-value commission">${commission}</span>
                 </div>
 
